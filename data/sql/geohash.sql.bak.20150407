@@ -1,0 +1,39 @@
+// step 1
+delete from user_schedule;
+insert into user_schedule
+select user_id, substr(user_geohash, 1, 5) as ug, substr(time, 1, 10) as t
+from user where user_geohash <> ''
+order by user_id, t;
+
+// step 2 fillGeohashByUser
+
+// step 3
+delete from user_geohash;
+insert into user_geohash
+select user_id, substr(user_geohash, 1, 5) as ug, count(*)
+from user where user_geohash <> ''
+group by user_id, ug;
+
+select count(distinct user_id) from user_geohash;
+
+// step 5
+delete from item_geohash;
+insert into item_geohash
+select item_id, substr(user_geohash, 1, 5) as ug , count(*)
+from user where user_geohash <> ''
+group by item_id, ug;
+
+select count(distinct item_id) from item_geohash;
+
+// step 5 fillGeohashByItem
+
+// step 3-5 loop
+
+
+// step 6
+insert into item_geohash
+(select distinct i.item_id, substr(i.item_geohash, 1, 5),  0
+from item i 
+where item_geohash <> ''
+and not exists (select 1 from item_geohash ig
+where ig.item_id = i.item_id and substr(i.item_geohash, 1, 5) = ig.geohash));
